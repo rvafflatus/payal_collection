@@ -108,7 +108,9 @@ function parseInventory(csv: string): Product[] {
     const title = column(row, "title");
     const categoryText = column(row, "category");
     const matchedCategory = CATEGORIES.find(
-      (item) => item.toLowerCase() === categoryText.toLowerCase(),
+      (item) =>
+        item.toLowerCase() === categoryText.toLowerCase() ||
+        (item === "Kurti" && categoryText.toLowerCase() === "kurtie"),
     );
     const category: Product["category"] =
       matchedCategory && matchedCategory !== "All" ? matchedCategory : "Other";
@@ -141,10 +143,28 @@ function parseInventory(csv: string): Product[] {
   });
 }
 
+function getDisplayImageUrl(src: string): string {
+  try {
+    const url = new URL(src);
+    if (url.hostname === "drive.google.com") {
+      const fileId =
+        url.searchParams.get("id") ?? url.pathname.match(/\/file\/d\/([^/]+)/)?.[1];
+      if (fileId) {
+        return `https://drive.google.com/thumbnail?id=${encodeURIComponent(fileId)}&sz=w1000`;
+      }
+    }
+  } catch {
+    return src;
+  }
+
+  return src;
+}
+
 function ProductImage({ src, alt }: { src: string; alt: string }) {
   const [failed, setFailed] = useState(false);
+  const imageUrl = getDisplayImageUrl(src);
 
-  if (!src || failed) {
+  if (!imageUrl || failed) {
     return (
       <div className="flex aspect-square items-center justify-center bg-stone-100 text-xs text-stone-400">
         No image
@@ -154,7 +174,7 @@ function ProductImage({ src, alt }: { src: string; alt: string }) {
 
   return (
     <Image
-      src={src}
+      src={imageUrl}
       alt={alt}
       width={400}
       height={400}
