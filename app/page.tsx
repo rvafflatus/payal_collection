@@ -2,15 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 const SHEET_CSV_URL =
   process.env.NEXT_PUBLIC_INVENTORY_CSV_URL ||
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vS_Qm1JIodhWYmKcBTZ83-cymTMMzjsIa1piuPzeqy47pMHQHu8WUr9jTAY3OxETb32h98xhKwavm7n/pub?gid=1720042712&single=true&output=csv";
-const GOOGLE_FORM_URL =
-  process.env.NEXT_PUBLIC_GOOGLE_FORM_URL ||
-  "https://docs.google.com/forms/d/e/1FAIpQLSdEjNM_RD50CFl_vhVlLBBFuDvpe_u4bQkb4OU9WN0RJqXpvA/viewform?usp=header";
-const STOCK_FORM_PIN = "2026";
-
 const CATEGORIES = ["All", "Kurti", "Jeans", "Leggings", "Suit Set", "Other"] as const;
 const SIZES = ["S", "M", "L", "XL", "XXL"] as const;
 
@@ -192,22 +188,6 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<Category>("All");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
-  const [pin, setPin] = useState("");
-  const [pinError, setPinError] = useState("");
-
-  function handleLogin(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (pin !== STOCK_FORM_PIN) {
-      setPinError("Incorrect PIN. Please try again.");
-      return;
-    }
-    if (!GOOGLE_FORM_URL) {
-      setPinError("The stock form link is not configured.");
-      return;
-    }
-    window.location.assign(GOOGLE_FORM_URL);
-  }
 
   useEffect(() => {
     const controller = new AbortController();
@@ -259,29 +239,12 @@ export default function Home() {
             <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Our Collection</h1>
             <p className="mt-2 text-stone-600">Find your next favorite outfit.</p>
           </div>
-          {GOOGLE_FORM_URL ? (
-            <a
-              href="#login"
-              onClick={(event) => {
-                event.preventDefault();
-                setPin("");
-                setPinError("");
-                setIsLoginOpen(true);
-              }}
-              className="inline-flex min-h-11 items-center justify-center rounded-lg bg-rose-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-800"
-            >
-              Login
-            </a>
-          ) : (
-            <button
-              type="button"
-              disabled
-              title="Set NEXT_PUBLIC_GOOGLE_FORM_URL to enable this link."
-              className="inline-flex min-h-11 cursor-not-allowed items-center justify-center rounded-lg bg-stone-300 px-5 py-3 text-sm font-semibold text-stone-600"
-            >
-              Login
-            </button>
-          )}
+          <Link
+            href="/admin/"
+            className="inline-flex min-h-11 items-center justify-center rounded-lg bg-rose-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-800"
+          >
+            Admin Login
+          </Link>
         </header>
 
         <nav aria-label="Filter products by category" className="mb-8 flex flex-wrap gap-2">
@@ -377,66 +340,6 @@ export default function Home() {
           </section>
         )}
       </div>
-      {isLoginOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) setIsLoginOpen(false);
-          }}
-        >
-          <section
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="login-title"
-            className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl"
-          >
-            <h2 id="login-title" className="text-xl font-semibold">
-              Stock form login
-            </h2>
-            <p className="mt-2 text-sm text-stone-600">Enter the PIN to continue.</p>
-            <form onSubmit={handleLogin} className="mt-5 space-y-4">
-              <label htmlFor="stock-pin" className="block text-sm font-medium">
-                PIN
-              </label>
-              <input
-                id="stock-pin"
-                type="password"
-                inputMode="numeric"
-                autoComplete="off"
-                maxLength={4}
-                value={pin}
-                onChange={(event) => {
-                  setPin(event.target.value);
-                  setPinError("");
-                }}
-                className="w-full rounded-lg border border-stone-300 px-3 py-2 outline-none focus:border-rose-700 focus:ring-2 focus:ring-rose-200"
-                required
-                autoFocus
-              />
-              {pinError && (
-                <p role="alert" className="text-sm text-red-700">
-                  {pinError}
-                </p>
-              )}
-              <div className="flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsLoginOpen(false)}
-                  className="rounded-lg px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="rounded-lg bg-rose-700 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-800"
-                >
-                  Continue
-                </button>
-              </div>
-            </form>
-          </section>
-        </div>
-      )}
     </main>
   );
 }
