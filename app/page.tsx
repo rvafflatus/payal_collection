@@ -240,7 +240,7 @@ export default function Home() {
             <p className="mt-2 text-stone-600">Find your next favorite outfit.</p>
           </div>
           <Link
-            href="/admin/"
+            href="/admin"
             className="inline-flex min-h-11 items-center justify-center rounded-lg bg-rose-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-800"
           >
             Admin Login
