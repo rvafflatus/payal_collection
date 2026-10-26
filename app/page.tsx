@@ -5,7 +5,7 @@ import Image from "next/image";
 
 const SHEET_CSV_URL =
   process.env.NEXT_PUBLIC_INVENTORY_CSV_URL ||
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vS_Qm1JIodhWYmKcBTZ83-cymTMMzjsIa1piuPzeqy47pMHQHu8WUr9jTAY3OxETb32h98xhKwavm7n/pub?output=csv";
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vS_Qm1JIodhWYmKcBTZ83-cymTMMzjsIa1piuPzeqy47pMHQHu8WUr9jTAY3OxETb32h98xhKwavm7n/pub?gid=1720042712&single=true&output=csv";
 const GOOGLE_FORM_URL =
   process.env.NEXT_PUBLIC_GOOGLE_FORM_URL ||
   "https://docs.google.com/forms/d/e/1FAIpQLSdEjNM_RD50CFl_vhVlLBBFuDvpe_u4bQkb4OU9WN0RJqXpvA/viewform?usp=header";
@@ -214,7 +214,12 @@ export default function Home() {
 
     async function loadInventory() {
       try {
-        const response = await fetch(SHEET_CSV_URL, { signal: controller.signal });
+        const csvUrl = new URL(SHEET_CSV_URL);
+        csvUrl.searchParams.set("_refresh", Date.now().toString());
+        const response = await fetch(csvUrl, {
+          cache: "no-store",
+          signal: controller.signal,
+        });
         if (!response.ok) {
           throw new Error(`The inventory sheet could not be loaded (HTTP ${response.status}).`);
         }
@@ -356,12 +361,12 @@ export default function Home() {
                           }`}
                           aria-label={
                             soldOut
-                              ? `Size ${size}: sold out`
+                              ? `Size ${size}: out of stock`
                               : `Size ${size}: ${product.stock[size]} available`
                           }
                         >
                           <span className={soldOut ? "line-through" : ""}>{size}</span>
-                          {soldOut ? "Sold Out" : `(${product.stock[size]})`}
+                          {soldOut ? "Out of Stock" : `(${product.stock[size]})`}
                         </span>
                       );
                     })}
